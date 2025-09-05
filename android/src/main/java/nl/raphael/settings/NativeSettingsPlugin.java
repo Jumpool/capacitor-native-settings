@@ -3,8 +3,10 @@ package nl.raphael.settings;
 import static android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS;
 import static android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS;
 import static android.provider.Settings.EXTRA_APP_PACKAGE;
+import static android.provider.Settings.EXTRA_CHANNEL_ID;
 
 import android.content.Intent;
+import android.os.Build;
 import android.net.Uri;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.JSObject;
@@ -53,8 +55,14 @@ public class NativeSettingsPlugin extends Plugin {
             intent.setAction(setting);
             intent.setData(Uri.parse("package:" + getActivity().getPackageName()));
         } else if (ACTION_APP_NOTIFICATION_SETTINGS.equals(setting)) { // App notification settings requires package name as extra app package.
-            intent.setAction(setting);
-            intent.putExtra(EXTRA_APP_PACKAGE, getActivity().getPackageName());
+             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                intent.setAction(setting);
+                intent.putExtra(EXTRA_APP_PACKAGE, context.getPackageName());
+                intent.putExtra(EXTRA_CHANNEL_ID, context.getApplicationInfo().uid);
+            } else {
+                intent.putExtra("app_package", context.getPackageName());
+                intent.putExtra("app_uid", context.getApplicationInfo().uid);
+            }
         } else {
             intent.setAction(setting);
         }
